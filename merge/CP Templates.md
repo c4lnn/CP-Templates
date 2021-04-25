@@ -617,18 +617,44 @@ void merge(int x,int y) {
 
 ## ST 表
 
+- 一维
+
 ```cpp
-int a[N],logn[N],st[25][N];
-void build(int n) {
+int a[N],st[25][N];
+void init(int n) {
     for(int i=1;i<=n;i++) st[0][i]=a[i];
-    for(int i=2;i<=n;i++) logn[i]=logn[i/2]+1;
-    for(int i=1;i<=logn[n];i++)
+    int t=log2(n);
+    for(int i=1;i<=t;i++)
         for(int j=1;j+(1<<i)-1<=n;j++)
             st[i][j]=max(st[i-1][j],st[i-1][j+(1<<i-1)]);
 }
 int query(int l,int r) {
     int k=logn[r-l+1];
     return max(st[k][l],st[k][r-(1<<k)+1]);
+}
+```
+
+- 二维
+
+```cpp
+int a[N][N],st[N][N][10][10];
+void init(int n,int m) {
+    int t1=log2(n);
+    int t2=log2(m);
+    for(int i=0;i<=t1;i++)
+        for(int j=0;j<=t2;j++)
+            for(int k=1;k<=n-(1<<i)+1;k++)
+                for(int l=1;l<=m-(1<<j)+1;l++) {
+                    if(!i&&!j) st[k][l][i][j]=a[k][l];
+                    else if(!i) st[k][l][i][j]=max(st[k][l][i][j-1],st[k][l+(1<<j-1)][i][j-1]);
+                    else st[k][l][i][j]=max(st[k][l][i-1][j],st[k+(1<<i-1)][l][i-1][j]);
+                }
+}
+int query(int x1,int y1,int x2,int y2) {
+    int t1=log2(x2-x1+1);
+    int t2=log2(y2-y1+1);
+    return max({st[x1][y1][t1][t2],st[x2-(1<<t1)+1][y1][t1][t2],
+                st[x1][y2-(1<<t2)+1][t1][t2],st[x2-(1<<t1)+1][y2-(1<<t2)+1][t1][t2]});
 }
 ```
 
