@@ -2564,8 +2564,8 @@ KM 算法只能在满足带权最大匹配一定是完美匹配的图中求解
 
 ```cpp
 const int INF=0x3f3f3f3f;
-int n,w[N][N],la[N],lb[N],ma[N],mb[N],vb[N],slk[N],pre[N];
-int km() {
+int w[N][N],la[N],lb[N],ma[N],mb[N],vb[N],slk[N],pre[N];
+int km(int n) {
     for(int i=1;i<=n;i++) {
         la[i]=lb[i]=mb[i]=0;
         for(int j=1;j<=n;j++)
