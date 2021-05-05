@@ -294,7 +294,7 @@ pair<LL,LL> get_hash(int l,int r) {
 
   若 $lcp(a,c)\ge \min(|A|,|B|)$，$A<b \Longleftrightarrow |A|<|B|$
 
-  否则，$A<b \Longleftrightarrow rk_a<rk_b$ 
+  否则，$A<b \Longleftrightarrow rk_a<rk_b$
 
 - 不同子串的数目：$\frac{n(n+1)}{2}-\sum_{i=2}^{n}height_i$
 
@@ -320,7 +320,7 @@ void DA() {
         for(int i=n;i>=1;i--) sa[cnt[rk[id[i]]]--]=id[i];
         for(int i=1;i<=n;i++) oldrk[i]=rk[i];
         p=0;
-        for(int i=1;i<=n;i++) 
+        for(int i=1;i<=n;i++)
             rk[sa[i]]=(oldrk[sa[i]]==oldrk[sa[i-1]]&&oldrk[sa[i]+w]==oldrk[sa[i-1]+w])?p:++p;
     }
 }
@@ -356,7 +356,7 @@ bool check(int k) { // 是否有某长度为 k 的子串至少不重叠地出现
 - 不同子串的总长度：$\sum_{i=1}^{sz}(\frac{len_i(len_i+1)}{2}-\frac{len_{link_i}(len_{link_i}+1)}{2})$
 
   可以在线计算，每插入一个字符的贡献是：$\frac{len_{last}(len_{last}+1)}{2}-\frac{len_{link_{last}}(len_{link_{last}}+1)}{2}$
-  
+
 - 出现次数：将不是复制创建的非初始状态的 $cnt$ 初始化为 $1$，再让 $cnt_{link_v}+=cnt_v$
 
 - 字典序第 $k$ 小子串：根据 $nxt$ 处理子树大小，若求的是去重后的第 $k$ 小，让子树大小初始值为 $1$，否则为该状态出现次数，然后 dfs 求出第 $k$ 小
@@ -2686,7 +2686,9 @@ int edmonds() {
   for(int i=1;i<=n;i++) if(!match[i]) res+=aug(i);
   return res;
 }
-```# 数学
+```
+
+# 数学
 
 ## 快速乘
 
@@ -2738,8 +2740,7 @@ LL qpow(LL a,LL b,LL m) {
 - long long 范围内 $2, 325, 9375, 28178, 450775, 9780504, 1795265022$
 - $3e15$ 内 $2, 2570940, 880937, 610386380, 4130785767$
 - $4e13$ 内 $2, 2570940, 211991001, 3749873356$
-
-- http://miller-rabin.appspot.com/
+- <http://miller-rabin.appspot.com>
 
 ```cpp
 // 前置模板：快速乘、快速幂
@@ -3494,6 +3495,7 @@ $f_n =
 当 $a$ 为大于 $1$ 的奇数 $2n+1$ 时，$b=2n²+2n,c=2n²+2n+1$
 
 当 $a$ 为大于 $4$ 的偶数 $2n$ 时，$b=n²-1,c=n²+1$
+
 # 计算几何
 
 ## 点
@@ -3942,5 +3944,3 @@ cout<<rd1(mt)<<' '<<rd2(mt)<<'\n';
 - 数组大小要开够
 - 字符串问题注意字符集
 - 二分注意上下界
-
-
