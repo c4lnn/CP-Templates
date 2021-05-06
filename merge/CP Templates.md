@@ -52,7 +52,7 @@ void print(T t) {
 
 ### Windows
 
-```
+```bat
 @echo off
 :loop
     rand.exe>data.in
@@ -61,6 +61,25 @@ void print(T t) {
     fc my.out std.out
 if not errorlevel 1 goto loop
 pause
+```
+
+### Linux
+```sh
+cs=1
+while true
+do
+    cs=$(($cs+1))
+    echo "Case $cs:"
+    ./data>data.in
+    ./my<data.in>my.out
+    ./std<data.in>std.out
+    if diff my.out std.out; then
+        echo "AC\n"
+    else
+        echo "WA\n"
+        exit 0
+    fi
+done
 ```
 
 # 字符串
