@@ -2613,6 +2613,12 @@ int km(int n) {
 }
 ```
 
+- HDU 2853
+
+>二分图两边集合大小为 $n,m$，给定匹配边，改变最少的匹配边使二分图权值匹配最大。
+
+将权值扩大 $k$ $(k>n)$ 倍，再将原匹配边权值 $+1$，跑 KM 算法，新二分图最大权值匹配 $/k$ 为原二分图最大权值匹配，最少改变的匹配边为 $n-$ 新二分图最大权值匹配 $\%k$。
+
 ## 一般图最大匹配
 
 ```cpp
@@ -2928,15 +2934,6 @@ LL get_inv(LL a,LL m) {
 }
 ```
 
-- 简洁写法
-
-```cpp
-LL get_inv(LL a) { // a < MOD
-    if(a==1) return 1;
-    return get_inv(MOD%a,MOD)*(MOD-MOD/a)%MOD;
-}
-```
-
 - 预处理 $1\sim n$ 的乘法逆元
 
 ```cpp
@@ -2989,12 +2986,12 @@ $$
 
 ```cpp
 // 前置模板：快速乘，扩展欧几里得
-LL CRT(LL *m,LL *a,int n) {
+LL crt(LL *m,LL *a,int n) {
     LL M=1,res=0;
     for(int i=1;i<=n;i++) M*=m[i];
     for(int i=1;i<=n;i++) {
         LL b=M/m[i],x,y;
-        LL d=ex_GCD(b,m[i],x,y);
+        LL d=exgcd(b,m[i],x,y);
         res=(res+qmul(qmul(b,a[i],M),(x%m[i]+m[i])%m[i],M))%M;
     }
     return res;
@@ -3017,17 +3014,17 @@ LL CRT(LL *m,LL *a,int n) {
 
 ```cpp
 // 前置模板：快速乘，扩展欧几里得
-LL ex_CRT(LL *m,LL *a,int n) {
+LL excrt(LL *m,LL *a,int n) {
     if(!n) return 0;
     LL M=m[1],A=a[1],x,y;
     for(int i=2;i<=n;i++) {
-        LL d=ex_GCD(M,m[i],x,y);
+        LL d=exgcd(M,m[i],x,y);
         LL c=(a[i]-A%m[i]+m[i])%m[i];
         if(c%d) return -1;
         x=qmul(x,c/d,m[i]/d); // 防爆 LL
         A+=M*x;
         M*=m[i]/d;
-        A=(A%M+M)%M;
+        A%=M;
     }
     return (A%M+M)%M;
 }
@@ -3494,9 +3491,7 @@ $f_n =
 
 当 $a$ 为大于 $1$ 的奇数 $2n+1$ 时，$b=2n²+2n,c=2n²+2n+1$
 
-当 $a$ 为大于 $4$ 的偶数 $2n$ 时，$b=n²-1,c=n²+1$
-
-# 计算几何
+当 $a$ 为大于 $4$ 的偶数 $2n$ 时，$b=n²-1,c=n²+1$# 计算几何
 
 ## 点
 
