@@ -1945,13 +1945,12 @@ void build() {
 
 对于有向图 $G$，$G$ 是欧拉图当且仅当 $G$ 的所有顶点属于同一个强连通分量且每个顶点的入度和出度相同
 
-对于有向图 $G$，$G$ 是半欧拉图当且仅当 $G$ 的所有顶点属于同一个强连通分量且
+对于有向图 $G$，$G$ 是半欧拉图当且仅当 
 
-- 最多只有一个顶点的出度与入度差为 $1$
+- 如果将 $G$ 中的所有有向边退化为无向边时，那么 $G$ 的所有顶点属于同一个连通分量。
 
-- 最多只有一个顶点的入度与出度差为 $1$
+- 有一个顶点的出度与入度差为 $1$，有一个顶点的入度与出度差为 $1$，其他顶点的入度和出度相同或者所有顶点入度和出度相同。
 
-- 所有其他顶点的入度和出度相同
 
 ```cpp
 int cnt,nxt[M<<1],to[M<<1],head[N];
@@ -1981,6 +1980,24 @@ void hierholzer(int s) {
     }
 }
 ```
+
+对于混合图 $G$，先将无向边随意规定一个方向，计算出各个顶点的入度和出度。
+
+欧拉图：
+
+如果将 $G$ 中的所有有向边退化为无向边时， $G$ 的所有顶点不属于同一个连通分量或者入度出度差是奇数的顶点个数不是 $0$ 个（对于无向边，无论方向如何，入度出度差奇偶性不变），则图 $G$ 不可能是欧拉图。
+
+接下来可以用网络流确定无向边方向判断图 $G$ 是否是欧拉图。
+
+建立起点 $s$ 和终点 $t$，将 $s$ 与出度大于入度的顶点与相连，出度小于入度的顶点与 $t$ 相连，容量为出度入度差的绝对值的 $\frac{1}{2}$，将之前定向的无向边之间建立一条容量为 $1$ 的边，当网络流中与起点相连的边都满流时存在欧拉图。
+
+我们的目的是调整无向边的方向使所有点的出度等于入度，假设网络流中经过 $(a,b)$ 这条边，意味着 $(a,b)$ 需要改变方向，使 $a$ 的出度 $-1$，入度 $+1$ ，$b$ 的入度 $-1$，出度 $+1$，所以网络流中与起点相连的边都满流时存在欧拉图。
+
+半欧拉图：
+
+如果将 $G$ 中的所有有向边退化为无向边时， $G$ 的所有顶点不属于同一个连通分量或者入度出度差是奇数的顶点个数不是 $0$ 或 $2$ 个，则图 $G$ 不可能是半欧拉图。
+
+将入度出度差是奇数的顶点之间加一条容量为 $1$ 的边，这样则所有顶点入度出度差都为偶数，这样只要判断是否是欧拉图即可。
 
 ## 拓扑排序
 
@@ -2813,10 +2830,10 @@ void go_fac(LL n) {
 - $1\sim n$ 的素数个数近似为 $\frac {n} {\ln{n}}$
 
 ```cpp
-LL mn[N];
-vector<LL> p;
-void prime_seive(LL n) {
-    for(LL i=2;i<=n;i++) {
+int mn[N];
+VI p;
+void prime_seive(int n) {
+    for(int i=2;i<=n;i++) {
         if(!mn[i]) mn[i]=i,p.PB(i);
         for(auto x:p) {
             if(x>mn[i]||x*i>n) break;
@@ -2833,11 +2850,11 @@ $1\sim N$ 与 $N$ 互质的数的个数被称为欧拉函数，记为 $\varphi(N
 $\varphi(N)=N * \prod_{p\mid N}{(1-\frac{1}{p})}$（$p$ 为质数）
 
 ```cpp
-LL mn[N],phi[N];
-vector<LL> p;
-void get_phi(LL n) {
+int mn[N],phi[N];
+VI p;
+void get_phi(int n) {
     phi[1]=1;
-    for(LL i=2;i<=n;i++) {
+    for(int i=2;i<=n;i++) {
         if(!mn[i]) mn[i]=i,p.PB(i),phi[i]=i-1;
         for(auto x:p) {
             if(x>mn[i]||x*i>n) break;
@@ -2850,6 +2867,8 @@ void get_phi(LL n) {
 ### 线性筛 & 莫比乌斯函数
 
 ```cpp
+int mn[N],mu[N];
+VI p;
 void get_mu(int n) {
     mu[1]=1;
     for(int i=2;i<=n;i++) {
@@ -3070,11 +3089,11 @@ LL BSGS(LL a,LL b,LL m) {
 - $O(\sqrt{n})$
 
 ```cpp
-LL solve(LL n) {
+LL solve(int n) {
     LL res=0;
-    for(LL l=1,r;l<=n;l=r+1) {
+    for(int l=1,r;l<=n;l=r+1) {
         r=n/(n/l);
-        res+=(r-l+1)*(n/l);
+        res+=1ll*(r-l+1)*(n/l);
     }
     return res;
 }
@@ -3083,11 +3102,11 @@ LL solve(LL n) {
 - 卡常 $O(\sqrt n)$
 
 ```cpp
-LL solve(LL n) {
+LL solve(int n) {
     LL res=0;
-    LL t=sqrt(n);
-    for(LL i=1;i<=t;i++) res+=n/i;
-    res=res*2-t*t;
+    int t=sqrt(n);
+    for(int i=1;i<=t;i++) res+=n/i;
+    res=res*2-1ll*t*t;
     return res;
 }
 ```
@@ -3095,12 +3114,12 @@ LL solve(LL n) {
 - $\sum_{i=1}^n \sum_{j=1}^m\lfloor \frac ni \rfloor \lfloor \frac mi \rfloor$
 
 ```cpp
-LL solve(LL n,LL m) {
+LL solve(int n,int m) {
     LL res=0;
-    LL lim=min(n,m);
-    for(LL l=1,r;l<=lim;l=r+1) {
+    int lim=min(n,m);
+    for(int l=1,r;l<=lim;l=r+1) {
         r=min(n/(n/l),m/(m/l));
-        res+=(r-l+1)*(n/l)*(m/l);
+        res+=1ll*(r-l+1)*(n/l)*(m/l);
     }
     return res;
 }
@@ -3175,7 +3194,7 @@ struct M {
 
 ```cpp
 const DB EPS=1e-9;
-DB a[N][N],x[N]; // a 是增广矩阵，b 是解
+DB a[N][N],x[N]; // a 是增广矩阵，x 是解
 bool free_x[N]; // 是否为自由变量
 int sgn(DB x) {return fabs(x)<EPS?0:(x>0?1:-1);}
 int gauss(int n,int m) { // n 个方程，m 个变量
@@ -3263,7 +3282,7 @@ int gauss(int n,int m) { // n 个方程，m 个变量
 
 ```cpp
 const int MOD=7;
-int a[N][N],x[N]; // a 是增广矩阵，b 是解
+int a[N][N],x[N]; // a 是增广矩阵，x 是解
 int LCM(int a,int b) {
     return a/__gcd(a,b)*b;
 }
@@ -3433,6 +3452,12 @@ $E(x)=\frac{1}{p}$
 + $\sum_{i=1}^n i[\gcd(i, n)=1] = \frac {n \varphi(n) + [n=1]}{2}$
 + $\sum_{i=1}^n \sum_{j=1}^m [\gcd(i,j)=x]=\sum_d \mu(d) \lfloor \frac n {dx} \rfloor  \lfloor \frac m {dx} \rfloor$
 + $\sum_{i=1}^n \sum_{j=1}^m \gcd(i, j) = \sum_{i=1}^n \sum_{j=1}^m \sum_{d|\gcd(i,j)} \varphi(d) = \sum_{d}^{\min(n,m)} \varphi(d) \lfloor \frac nd \rfloor \lfloor \frac md \rfloor$
+
+### 莫比乌斯反演
+
+$F(n)=\sum_{d\mid n}f(d)\Leftrightarrow f(n)=\sum_{d\mid n}\mu(d)F(\frac{n}{d})$
+
+$F(n)=\sum_{n\mid d}f(d)\Leftrightarrow f(n)=\sum_{n\mid d}\mu(\frac{d}{n})F(d)$
 
 ### 组合数学公式
 
