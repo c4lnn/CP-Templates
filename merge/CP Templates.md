@@ -2354,59 +2354,61 @@ void tarjan(int u) {
 - 最大流最小割定理：网络流图中，最大流的值等于最小割的容量
 
 ```cpp
-const int INF=0x3f3f3f3f;
-int n,s,t,d[N],cur[N];
-VI g[N];
-VPII e;
-void init() {
-    for(int i=1;i<=n;i++) g[i].clear();
-    e.clear();
-}
-void add_edge(int u,int v,int c) {
-    e.EB(v,c);
-    e.EB(u,0);
-    g[u].PB(SZ(e)-2);
-    g[v].PB(SZ(e)-1);
-}
-bool bfs() {
-    for(int i=1;i<=n;i++) d[i]=0;
-    queue<int> q;
-    q.push(s);
-    d[s]=1;
-    while(SZ(q)) {
-        int u=q.front();
-        q.pop();
-        for(auto x:g[u]) {
-            int v=e[x].FI,c=e[x].SE;
-            if(d[v]||c<=0) continue;
-            d[v]=d[u]+1;
-            q.push(v);
+struct MAXIMUM_FLOW {
+    const int INF=0x3f3f3f3f;
+    int n,s,t,d[N],cur[N];
+    VI g[N];
+    VPII e;
+    void init() {
+        for(int i=1;i<=n;i++) g[i].clear();
+        e.clear();
+    }
+    void add_edge(int u,int v,int c) {
+        e.EB(v,c);
+        e.EB(u,0);
+        g[u].PB(SZ(e)-2);
+        g[v].PB(SZ(e)-1);
+    }
+    bool bfs() {
+        for(int i=1;i<=n;i++) d[i]=0;
+        queue<int> q;
+        q.push(s);
+        d[s]=1;
+        while(SZ(q)) {
+            int u=q.front();
+            q.pop();
+            for(auto x:g[u]) {
+                int v=e[x].FI,c=e[x].SE;
+                if(d[v]||c<=0) continue;
+                d[v]=d[u]+1;
+                q.push(v);
+            }
         }
+        return d[t];
     }
-    return d[t];
-}
-int dfs(int u,int a) { // 多路增广
-    if(u==t) return a;
-    int f,flow=0;
-    for(int &i=cur[u];i<SZ(g[u]);i++) {
-        int v=e[g[u][i]].FI,&c=e[g[u][i]].SE;
-        if(d[v]!=d[u]+1||c<=0||(f=dfs(v,min(a,c)))<=0) continue;
-        c-=f;
-        e[g[u][i]^1].SE+=f;
-        a-=f;
-        flow+=f;
-        if(a==0) break;
+    int dfs(int u,int a) {
+        if(u==t) return a;
+        int f,flow=0;
+        for(int &i=cur[u];i<SZ(g[u]);i++) {
+            int v=e[g[u][i]].FI,&c=e[g[u][i]].SE;
+            if(d[v]!=d[u]+1||c<=0||(f=dfs(v,min(a,c)))<=0) continue;
+            c-=f;
+            e[g[u][i]^1].SE+=f;
+            a-=f;
+            flow+=f;
+            if(a==0) break;
+        }
+        return flow;
     }
-    return flow;
-}
-int dinic() {
-    int flow=0;
-    while(bfs()) {
-        for(int i=1;i<=n;i++) cur[i]=0;
-        flow+=dfs(s,INF);
+    int dinic() {
+        int flow=0;
+        while(bfs()) {
+            for(int i=1;i<=n;i++) cur[i]=0;
+            flow+=dfs(s,INF);
+        }
+        return flow;
     }
-    return flow;
-}
+}mf;
 ```
 
 ### 最小费用最大流
@@ -4303,3 +4305,4 @@ cout<<rd1(mt)<<' '<<rd2(mt)<<'\n';
 - 数组大小要开够
 - 字符串问题注意字符集
 - 二分注意上下界
+
