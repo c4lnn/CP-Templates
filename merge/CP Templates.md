@@ -248,34 +248,36 @@ int find(const string &s) {
 - 多组数据字符集大小不一样时，初始化按最大字符集大小处理
 
 ```cpp
-int tr[N][M],fail[N],sz; // fail指针指向与当前前缀匹配的最长后缀的位置
-void init() {
-    for(int i=0;i<=sz;i++) {
-        for(int j=0;j<M;j++) tr[i][j]=0;
-    	fail[i]=0;
+struct AC {
+    int tr[N][26],fail[N],sz; // fail指针指向与当前前缀匹配的最长后缀的位置
+    void init() {
+        for(int i=0;i<=sz;i++) {
+            for(int j=0;j<26;j++) tr[i][j]=0;
+        	fail[i]=0;
+        }
+        sz=0;
     }
-    sz=0;
-}
-void insert(const string &s) {
-    int u=0;
-    for(auto c:s) {
-        int v=c-'a';
-        if(!tr[u][v]) tr[u][v]=++sz;
-        u=tr[u][v];
-    }
-}
-void build() {
-    queue<int> q;
-    for(int v=0;v<M;v++) if(tr[0][v]) q.push(tr[0][v]);
-    while(SZ(q)) {
-        int u=q.front();
-        q.pop();
-        for(int v=0;v<M;v++) {
-            if(tr[u][v]) fail[tr[u][v]]=tr[fail[u]][v],q.push(tr[u][v]);
-            else tr[u][v]=tr[fail[u]][v];
+    void insert(const string &s) {
+        int u=0;
+        for(auto c:s) {
+            int v=c-'a';
+            if(!tr[u][v]) tr[u][v]=++sz;
+            u=tr[u][v];
         }
     }
-}
+    void build() {
+        queue<int> q;
+        for(int v=0;v<26;v++) if(tr[0][v]) q.push(tr[0][v]);
+        while(SZ(q)) {
+            int u=q.front();
+            q.pop();
+            for(int v=0;v<26;v++) {
+                if(tr[u][v]) fail[tr[u][v]]=tr[fail[u]][v],q.push(tr[u][v]);
+                else tr[u][v]=tr[fail[u]][v];
+            }
+        }
+    }
+} ac;
 ```
 
 ## Hash 字符串
@@ -478,7 +480,6 @@ void gsa_topo() {
     for(int i=sz;i>=1;i--) a[c[len[i]]--]=i;
 }
 ```
-
 # 动态规划
 
 ## 背包问题
@@ -679,42 +680,44 @@ int query(int x1,int y1,int x2,int y2) {
 
 ## 树状数组
 
-- 单点修改查询
+- 单点修改 & 单点查询 & 区间查询
 
 ```cpp
-int lowbit(int x) {
-    return x&-x;
-}
+int n,b[N];
 void update(int x,int v) {
-    for(int i=x;i<=n;i+=lowbit(i)) c[i]+=v;
+    for(int i=x;i<=n;i+=i&-i) b[i]+=v;
 }
 int query(int x) {
-    int res=0;
-    for(int i=x;i;i-=lowbit(i)) res+=c[i];
-    return res;
+    int ret=0;
+    for(int i=x;i;i-=i&-i) ret+=b[i];
+    return ret;
+}
+int query(int l,int r) {
+    int ret=0;
+    for(int i=r;i;i-=i&-i) ret+=b[i];
+    for(int i=l-1;i;i-=i&-i) ret-=b[i];
+    return ret;
 }
 ```
 
-- 区间修改查询
+- 区间修改 & 单点查询 & 区间查询
 
 ```cpp
-int lowbit(int x) {
-    return x&-x;
-}
-void update(int x,int v) {
-    for(int i=x;i<=n;i+=lowbit(i)) c[i]+=v,d[i]+=x*v;
+int n,b[N],c[N];
+void update(int l,int r,int v) {
+    for(int i=l;i<=n;i+=i&-i) b[i]+=v,c[i]+=l*v;
+    for(int i=r+1;i<=n;i+=i&-i) b[i]-=v,c[i]-=(r+1)*v;
 }
 int query(int x) {
-    int res=0;
-    for(int i=x;i;i-=lowbit(i)) res+=(x+1)*c[i]-d[i];
-    return res;
+    int ret=0;
+    for(int i=x;i;i-=i&-i) ret+=(x+1)*b[i]-c[i];
+    return ret;
 }
-void rangeUpdate(int l,int r,int v) {
-    update(l,v);
-    update(r+1,-v);
-}
-int rangeQuery(int l,int r) {
-    return query(r)-query(l-1);
+int query(int l,int r) {
+    int ret=0;
+    for(int i=r;i;i-=i&-i) ret+=(r+1)*b[i]-c[i];
+    for(int i=l-1;i;i-=i&-i) ret-=l*b[i]-c[i];
+    return ret;
 }
 ```
 
@@ -1119,7 +1122,6 @@ int main() {
     return 0;
 }
 ```
-
 # 图论
 
 ## 最短路
@@ -1945,7 +1947,7 @@ void build() {
 
 对于有向图 $G$，$G$ 是欧拉图当且仅当 $G$ 的所有顶点属于同一个强连通分量且每个顶点的入度和出度相同
 
-对于有向图 $G$，$G$ 是半欧拉图当且仅当 
+对于有向图 $G$，$G$ 是半欧拉图当且仅当
 
 - 如果将 $G$ 中的所有有向边退化为无向边时，那么 $G$ 的所有顶点属于同一个连通分量。
 
@@ -2354,8 +2356,8 @@ void tarjan(int u) {
 - 最大流最小割定理：网络流图中，最大流的值等于最小割的容量
 
 ```cpp
+const int INF=0x3f3f3f3f;
 struct MAXIMUM_FLOW {
-    const int INF=0x3f3f3f3f;
     int n,s,t,d[N],cur[N];
     VI g[N];
     VPII e;
@@ -2408,7 +2410,7 @@ struct MAXIMUM_FLOW {
         }
         return flow;
     }
-}mf;
+} mf;
 ```
 
 ### 最小费用最大流
@@ -2712,7 +2714,6 @@ int edmonds() {
   return res;
 }
 ```
-
 # 数学
 
 ## 快速乘
@@ -3387,47 +3388,47 @@ LL solve(int n,int m) {
 
 ```cpp
 struct M {
-    LL a[sz][sz];
+    LL a[N][N];
     void clear() {memset(a,0,sizeof a);}
     M() {clear();}
     void init() {
         clear();
-        for(int i=0;i<sz;i++) a[i][i]=1;
+        for(int i=0;i<N;i++) a[i][i]=1;
     }
     M operator + (const M &T) const {
         M ret;
-        for(int i=0;i<sz;i++)
-            for(int j=0;j<sz;j++)
+        for(int i=0;i<N;i++)
+            for(int j=0;j<N;j++)
                 ret.a[i][j]=(a[i][j]+T.a[i][j])%MOD;
         return ret;
     }
     M operator - (const M &T) const {
         M ret;
-        for(int i=0;i<sz;i++)
-            for(int j=0;j<sz;j++)
+        for(int i=0;i<N;i++)
+            for(int j=0;j<N;j++)
                 ret.a[i][j]=(a[i][j]-T.a[i][j]+MOD)%MOD;
         return ret;
     }
     M operator * (const LL &v) const {
         M ret;
-        for(int i=0;i<sz;i++)
-            for(int j=0;j<sz;j++) if(a[i][j])
+        for(int i=0;i<N;i++)
+            for(int j=0;j<N;j++) if(a[i][j])
                 ret.a[i][j]=a[i][j]*v%MOD;
         return ret;
     }
     M operator * (const M &T) const {
         M ret;
-        for(int i=0;i<sz;i++)
-            for(int k=0;k<sz;k++) if(a[i][k])
-                for(int j=0;j<sz;j++) if(T.a[k][j])
+        for(int i=0;i<N;i++)
+            for(int k=0;k<N;k++) if(a[i][k])
+                for(int j=0;j<N;j++) if(T.a[k][j])
                     ret.a[i][j]=(ret.a[i][j]+a[i][k]*T.a[k][j]%MOD)%MOD;
         return ret;
     }
     M operator ^ (LL b) const {
         M ret,bas;
-        for(int i=0;i<sz;i++) ret.a[i][i]=1;
-        for(int i=0;i<sz;i++)
-            for(int j=0;j<sz;j++)
+        for(int i=0;i<N;i++) ret.a[i][i]=1;
+        for(int i=0;i<N;i++)
+            for(int j=0;j<N;j++)
                 bas.a[i][j]=a[i][j];
         while(b) {
             if(b&1) ret=ret*bas;
@@ -3437,9 +3438,9 @@ struct M {
         return ret;
     }
     void print() {
-        for(int i=0;i<sz;i++)
-            for(int j=0;j<sz;j++)
-                cout<<a[i][j]<<" \n"[j==sz-1];
+        for(int i=0;i<N;i++)
+            for(int j=0;j<N;j++)
+                cout<<a[i][j]<<" \n"[j==N-1];
     }
 };
 ```
@@ -3856,7 +3857,6 @@ $f_n =
 当 $a$ 为大于 $1$ 的奇数 $2n+1$ 时，$b=2n²+2n,c=2n²+2n+1$
 
 当 $a$ 为大于 $4$ 的偶数 $2n$ 时，$b=n²-1,c=n²+1$
-
 # 计算几何
 
 ## 点
@@ -4305,4 +4305,3 @@ cout<<rd1(mt)<<' '<<rd2(mt)<<'\n';
 - 数组大小要开够
 - 字符串问题注意字符集
 - 二分注意上下界
-
