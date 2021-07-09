@@ -570,6 +570,22 @@ for(int l=2;l<=n;l++)
             dp[i][j]=min(dp[i][j],dp[i][k]+dp[k+1][j]+sum[j]-sum[i-1]);
 ```
 
+## 状压 DP
+
+- 预处理二进制状态 $1$ 的个数
+
+```cpp
+// i&(i-1)=i-lowbit(i)
+for(int i=1;i<1<<n;i++) cnt[i]=cnt[i&(i-1)]+1;
+```
+
+- 枚举二进制状态的子集
+
+```cpp
+for(int i=0;i<1<<n;i++)
+    for(int j=i;j;j=(j-1)&i)
+```
+
 ## 数位 DP
 
 - 注意前导 $0$
@@ -2251,8 +2267,7 @@ LL calc(int u,int t) {
 void divide(int u) {
     mx[rt=0]=INT_MAX;
     get_rt(u,0,sz[u]);
-    u=rt;
-    st[u]=true;
+    st[u=rt]=true;
     res+=calc(u,0);
     for(auto v:g[u]) if(!st[v]) {
         res-=calc(v,1);
