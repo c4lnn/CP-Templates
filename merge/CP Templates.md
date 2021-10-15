@@ -18,6 +18,7 @@ typedef long long LL;
 typedef unsigned long long ULL;
 typedef pair<int,int> PII;
 typedef vector<int> VI;
+typedef vector<LL> VLL;
 typedef vector<PII> VPII;
 // head
 ```
@@ -655,25 +656,25 @@ void merge(int x,int y) {
 - 一维
 
 ```cpp
-int a[N],st[25][N];
+int a[N],mx[25][N];
 int hightbit(int x) {return 31-__builtin_clz(x);}
 void init(int n) {
-    for(int i=1;i<=n;i++) st[0][i]=a[i];
+    for(int i=1;i<=n;i++) mx[0][i]=a[i];
     int t=hightbit(n);
     for(int i=1;i<=t;i++)
         for(int j=1;j+(1<<i)-1<=n;j++)
-            st[i][j]=max(st[i-1][j],st[i-1][j+(1<<(i-1))]);
+            mx[i][j]=max(mx[i-1][j],mx[i-1][j+(1<<(i-1))]);
 }
 int query(int l,int r) {
     int k=hightbit(r-l+1);
-    return max(st[k][l],st[k][r-(1<<k)+1]);
+    return max(mx[k][l],mx[k][r-(1<<k)+1]);
 }
 ```
 
 - 二维
 
 ```cpp
-int a[N][N],st[N][N][10][10];
+int a[N][N],mx[N][N][10][10];
 int hightbit(int x) {return 31-__builtin_clz(x);}
 void init(int n,int m) {
     int t1=hightbit(n);
@@ -682,16 +683,16 @@ void init(int n,int m) {
         for(int j=0;j<=t2;j++)
             for(int k=1;k<=n-(1<<i)+1;k++)
                 for(int l=1;l<=m-(1<<j)+1;l++) {
-                    if(!i&&!j) st[k][l][i][j]=a[k][l];
-                    else if(!i) st[k][l][i][j]=max(st[k][l][i][j-1],st[k][l+(1<<(j-1))][i][j-1]);
-                    else st[k][l][i][j]=max(st[k][l][i-1][j],st[k+(1<<(i-1))][l][i-1][j]);
+                    if(!i&&!j) mx[k][l][i][j]=a[k][l];
+                    else if(!i) mx[k][l][i][j]=max(mx[k][l][i][j-1],mx[k][l+(1<<(j-1))][i][j-1]);
+                    else mx[k][l][i][j]=max(mx[k][l][i-1][j],mx[k+(1<<(i-1))][l][i-1][j]);
                 }
 }
 int query(int x1,int y1,int x2,int y2) {
     int t1=hightbit(x2-x1+1);
     int t2=hightbit(y2-y1+1);
-    return max({st[x1][y1][t1][t2],st[x2-(1<<t1)+1][y1][t1][t2],
-                st[x1][y2-(1<<t2)+1][t1][t2],st[x2-(1<<t1)+1][y2-(1<<t2)+1][t1][t2]});
+    return max({mx[x1][y1][t1][t2],mx[x2-(1<<t1)+1][y1][t1][t2],
+                mx[x1][y2-(1<<t2)+1][t1][t2],mx[x2-(1<<t1)+1][y2-(1<<t2)+1][t1][t2]});
 }
 ```
 
@@ -4356,11 +4357,13 @@ struct L {
     P s,t;
     L() {}
     L(P s,P t):s(s),t(t) {}
-
     bool operator == (const L &a) const {return s==a.s&&t==a.t;}
-
-    int relation(const P &p) {return sgn((p-s)^(t-s));} // -1在左侧，1在右侧，0在直线上
-
+    // -1在左侧，1在右侧，0在直线上
+    int relation(const P &p) {return sgn((p-s)^(t-s));}
+    // -1 在 T 的逆时针方向，1 在 T 的顺时针方向，0 共线
+    int relation(const L &T) const {
+        return sgn((t-s)^(T.t-T.s));
+    }
     P cross_point(const L &a) { // 直线交,需保证不平行不重合
         DB s1=(t-s)^(a.s-s);
         DB s2=(t-s)^(a.t-s);
@@ -4433,23 +4436,21 @@ P compute_circle_center(P a,P b,P c) { // 三点定圆
 ### 凸包
 
 ```cpp
-void andrew() { // 凸包
+void andrew() {
     sort(p+1,p+1+n);
-    for(int i=1;i<=min(n,2);i++) stk[++top]=p[i];
-    if(n==2&&stk[1]==stk[2]) --top;
-    if(n<=2) return;
+    // 有重复点需要去重，至少三个不相同的点才能构成凸包，根据题意判断点或线段的特殊情况
+    for(int i=1;i<=2;i++) stk[++top]=p[i];
     for(int i=3;i<=n;i++) {
         while(top>=2&&sgn((stk[top]-stk[top-1])^(p[i]-stk[top]))<=0) --top;
         stk[++top]=p[i];
     }
     int temp=top;
     stk[++top]=p[n-1];
-    for(int i=n-1;i>=1;i--) {
-        while(top>temp&&sgn((stk[top]-stk[top-1])^(p[i]-stk[top]))<=0) --top;
+    for(int i=n-2;i>=1;i--) {
+        while(top>=temp&&sgn((stk[top]-stk[top-1])^(p[i]-stk[top]))<=0) --top;
         stk[++top]=p[i];
     }
-    if(top==2&&stk[1]==stk[2]) --top;
-    // 凸包上有 top - 1 个点，1 号点被记录了两次，分别为 stk[1] 和 stk[top]
+    // 1 和 top 为同一个点，凸包上共有 top - 1 个点
 }
 ```
 
@@ -4510,7 +4511,9 @@ struct S {
 
 ## 其它
 
-- 圆台体积公式：$V=\frac1 3\pi h(R^2+r^2+Rr)$ （$r$ 为上底半径、$R$ 为下底半径、$h$ 为高）# 杂项
+- 圆台体积公式：$V=\frac1 3\pi h(R^2+r^2+Rr)$ （$r$ 为上底半径、$R$ 为下底半径、$h$ 为高）
+
+# 杂项
 
 ## 排序
 
