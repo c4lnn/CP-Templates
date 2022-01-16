@@ -5,7 +5,7 @@
 ```cpp
 #include <bits/stdc++.h>
 #define SZ(x) (int)(x).size()
-#define ALL(x) (x).begin(),(x).end()
+#define ALL(x) (x).begin(), (x).end()
 #define PB push_back
 #define EB emplace_back
 #define MP make_pair
@@ -16,7 +16,7 @@ typedef double DB;
 typedef long double LD;
 typedef long long LL;
 typedef unsigned long long ULL;
-typedef pair<int,int> PII;
+typedef pair<int, int> PII;
 typedef vector<int> VI;
 typedef vector<LL> VLL;
 typedef vector<PII> VPII;
@@ -103,16 +103,19 @@ $A[i\cdots i+k-1]=B[j\cdots j+k-1]$
 
 ```cpp
 int get_min(const string &s) {
-    int k=0,i=0,j=1,len=SZ(s);
-    while(k<len&&i<len&&j<len) {
-        if(s[(i+k)%len]==s[(j+k)%len]) ++k;
-        else {
-            s[(i+k)%len]>s[(j+k)%len]?i=i+k+1:j=j+k+1;
-            if(i==j) ++i;
-            k=0;
+    int k = 0, i = 0, j = 1, len = SZ(s);
+    while (k < len && i < len && j < len) {
+        if (s[(i + k) % len] == s[(j + k) % len]) {
+            ++k;
+        } else {
+            s[(i + k) % len] > s[(j + k) % len] ? i = i + k + 1 : j = j + k + 1;
+            if (i == j) {
+                ++i;
+            }
+            k = 0;
         }
     }
-    return min(i,j);
+    return min(i, j);
 }
 ```
 
@@ -122,11 +125,14 @@ int get_min(const string &s) {
 
 ```cpp
 void get_next(const string &t) { // next 数组表示 0 ~ i - 1 的最长 border
-    int i=0,j=-1;
-    nxt[0]=-1;
-    while(i<SZ(t)) {
-        if(j==-1||t[i]==t[j]) nxt[++i]=++j;
-        else j=nxt[j];
+    int i = 0, j = -1;
+    nxt[0] = -1;
+    while (i < SZ(t)) {
+        if (j == -1 || t[i] == t[j]) {
+            nxt[++i] = ++j;
+        } else {
+            j = nxt[j];
+        }
     }
 }
 ```
@@ -136,26 +142,35 @@ void get_next(const string &t) { // next 数组表示 0 ~ i - 1 的最长 border
 ```cpp
 // 优化后的 next 不再是最长 border
 void get_next(const string &t) {
-    int i=0,j=-1;
-    nxt[0]=-1;
-    while(i<SZ(t)) {
-        if(j==-1||t[i]==t[j]) {
-            ++i,++j;
-            if(t[i]!=t[j]) nxt[i]=j;
-            else nxt[i]=nxt[j];
+    int i = 0, j = -1;
+    nxt[0] = -1;
+    while (i < SZ(t)) {
+        if (j == -1 || t[i] == t[j]) {
+            ++i, ++j;
+            if (t[i] != t[j]) {
+                nxt[i] = j;
+            }
+            else {
+                nxt[i] = nxt[j];
+            }
+        } else {
+            j = nxt[j];
         }
-        else j=nxt[j];
     }
 }
-void kmp(const string &s,const string &t) {
+void kmp(const string &s, const string &t) {
     get_next(t);
-    int i=0,j=0;
-    while(i<SZ(s)) {
-        if(j==-1||s[i]==t[j]) {
-            ++i,++j;
-            if(j==SZ(t)) cout<<i-j+1<<'\n',j=nxt[j]; // 匹配成功
+    int i = 0, j = 0;
+    while (i < SZ(s)) {
+        if (j == -1 || s[i] == t[j]) {
+            ++i, ++j;
+            if (j == SZ(t)) {
+                cout << i - j + 1 << '\n';
+                j = nxt[j]; // 匹配成功
+            }
+        } else {
+            j = nxt[j];
         }
-        else j=nxt[j];
     }
 }
 ```
@@ -168,31 +183,39 @@ void kmp(const string &s,const string &t) {
 int nxt[N]; // 以 T[i] 开始的子串与 T 的最长相同前缀长度
 int extend[N]; // 以 S[i] 开始的子串与 T 的最长相同前缀长度
 void get_next(const string &t) {
-    int l=0,r=0; // l 为当前最长匹配起点，r 为当前最长匹配终点
-    int len=t.length();
-    nxt[0]=len;
-    for(int i=1;i<len;i++) {
-        if(i>r||i+nxt[i-l]>=r) {
-            if(i>r) r=i;
-            while(r<len&&t[r]==t[r-i]) r++; // 重新暴力匹配更新 r
-            nxt[i]=r-i;
-            l=i;
+    int l = 0, r = 0; // l 为当前最长匹配起点，r 为当前最长匹配终点
+    nxt[0] = SZ(t);
+    for (int i = 1; i < SZ(t); i++) {
+        if (i > r || i + nxt[i - l] >= r) {
+            if (i > r) {
+                r = i;
+            }
+            while (r < SZ(t) && t[r] == t[r - i]) {
+                ++r; // 重新暴力匹配更新 r
+            }
+            nxt[i] = r - i;
+            l = i;
+        } else {
+            nxt[i] = nxt[i - l];
         }
-        else nxt[i]=nxt[i-l];
     }
 }
-void get_extend(const string &s,const string &t) {
+void get_extend(const string &s, const string &t) {
     get_next(t);
-    int l=0,r=0;
-    int len_s=s.length(),len_t=t.length();
-    for(int i=0;i<len_s;i++) {
-        if(i>r||i+nxt[i-l]>=r) {
-            if(i>r) r=i;
-            while(r<len_s&&r-i<len_t&&s[r]==t[r-i]) r++;
-            extend[i]=r-i;
-            l=i;
+    int l = 0, r = 0;
+    for (int i = 0; i < SZ(s); i++) {
+        if (i > r || i + nxt[i - l] >= r) {
+            if (i > r) {
+                r = i;
+            }
+            while (r < SZ(s) && r - i < SZ(t) && s[r] == t[r - i]) {
+                ++r;
+            }
+            extend[i] = r - i;
+            l = i;
+        } else {
+            extend[i] = nxt[i - l];
         }
-        else extend[i]=nxt[i-l];
     }
 }
 ```
@@ -203,42 +226,51 @@ void get_extend(const string &s,const string &t) {
 char t[N<<1];
 int len[N<<1];
 int manacher(const string &s) {
-    int k=0,mid=0,r=0,res=0;
-    t[0]='$';
-    for(int i=0;s[i];i++) t[++k]='#',t[++k]=s[i];
-    t[++k]='#';
-    for(int i=1;i<=k;i++) {
-        len[i]=i<r?min(r-i,len[2*mid-i]):1;
-        while(i-len[i]>=1&&i+len[i]<=k&&t[i-len[i]]==t[i+len[i]]) ++len[i];
-        if(len[i]+i>r) {
-            r=len[i]+i;
-            mid=i;
-            res=max(res,len[i]); // 更新id回文串中点和mx回文串最右端
+    int k = 0, mid = 0, r = 0, res = 0;
+    t[0] = '$';
+    for (auto c : s) {
+        t[++k] = '#';
+        t[++k] = c;
+    }
+    t[++k] = '#';
+    for (int i = 1; i <= k; i++) {
+        len[i] = i < r ? min(r - i, len[2 * mid - i]) : 1;
+        while (i - len[i] >= 1 && i + len[i] <= k && t[i - len[i]] == t[i + len[i]]) {
+            ++len[i];
+        }
+        if (len[i] + i > r) {
+            r = len[i] + i;
+            mid = i;
+            res = max(res, len[i]); // 更新id回文串中点和mx回文串最右端
         }
     }
-    return res-1; // 返回最大回文串长度
+    return res - 1; // 返回最大回文串长度
 }
 ```
 
 ## Trie 树
 
 ```cpp
-int tr[N][26],tot[N],sz;
+int tr[N][26], tot[N], sz;
 void insert(const string &s) {
-    int u=0;
-    for(auto c:s) {
-        int v=c-'a';
-        if(!tr[u][v]) tr[u][v]=++sz;
-        u=tr[u][v];
+    int u = 0;
+    for (auto c : s) {
+        int v = c - 'a';
+        if (!tr[u][v]) {
+            tr[u][v] = ++sz;
+        }
+        u = tr[u][v];
     }
     tot[u]++;
 }
 int find(const string &s) {
-    int u=0;
-    for(auto c:s) {
-        int v=c-'a';
-        if(!tr[u][v]) return 0;
-        u=tr[u][v];
+    int u = 0;
+    for (auto c : s) {
+        int v = c - 'a';
+        if (!tr[u][v]) {
+            return 0;
+        }
+        u = tr[u][v];
     }
     return tot[u]; // 返回该字符串的个数
 }
@@ -656,18 +688,24 @@ void merge(int x,int y) {
 - 一维
 
 ```cpp
-int a[N],mx[25][N];
-int hightbit(int x) {return 31-__builtin_clz(x);}
-void init(int n) {
-    for(int i=1;i<=n;i++) mx[0][i]=a[i];
-    int t=hightbit(n);
-    for(int i=1;i<=t;i++)
-        for(int j=1;j+(1<<i)-1<=n;j++)
-            mx[i][j]=max(mx[i-1][j],mx[i-1][j+(1<<(i-1))]);
+int a[N], mx[25][N];
+int hightbit(int x) {
+    return 31 - __builtin_clz(x);
 }
-int query(int l,int r) {
-    int k=hightbit(r-l+1);
-    return max(mx[k][l],mx[k][r-(1<<k)+1]);
+void init(int n) {
+    for (int i = 1; i <= n; i++) {
+        mx[0][i]=a[i];
+    }
+    int t = hightbit(n);
+    for (int i = 1; i <= t; i++) {
+        for(int j = 1; j + (1 << i) - 1 <= n; j++) {
+            mx[i][j] = max(mx[i - 1][j], mx[i - 1][j + (1 << (i - 1))]);
+        }
+    }
+}
+int query(int l, int r) {
+    int k = hightbit(r - l + 1);
+    return max(mx[k][l], mx[k][r - (1 << k) + 1]);
 }
 ```
 
@@ -3016,7 +3054,7 @@ LL qpow(LL a,LL b,LL m) {
 
 ## Miller-Rabin 素性测试
 
-- 二次探测定理：如果 p 是奇素数，则 $x^2\equiv 1\pmod p$ 的解为 $x\equiv 1 \pmod p$ 或者 $x\equiv p-1 \pmod p$
+- 二次探测定理：如果 $p$ 是奇素数，则 $x^2\equiv 1\pmod p$ 的解为 $x\equiv 1 \pmod p$ 或者 $x\equiv p-1 \pmod p$
 - int 范围内只需检查 $2, 7, 61$
 - long long 范围内 $2, 325, 9375, 28178, 450775, 9780504, 1795265022$
 - $3e15$ 内 $2, 2570940, 880937, 610386380, 4130785767$
@@ -3272,11 +3310,16 @@ $\sum_{d \mid n}\mu(d)F(n/d)=\sum_{d \mid n}\mu(d)\sum_{e \mid (n/d)}{f(e)}=\sum
 int mn[N];
 VI p;
 void prime_seive(int n) {
-    for(int i=2;i<=n;i++) {
-        if(!mn[i]) mn[i]=i,p.PB(i);
-        for(auto x:p) {
-            if(x>mn[i]||x*i>n) break;
-            mn[i*x]=x;
+    for (int i = 2; i <= n; i++) {
+        if (!mn[i]) {
+            mn[i] = i,
+            p.PB(i);
+        }
+        for (auto x : p) {
+            if (x > mn[i] || x * i > n) {
+                break;
+            }
+            mn[x * i] = x;
         }
     }
 }
@@ -3287,16 +3330,22 @@ void prime_seive(int n) {
 $\varphi(N)=N * \prod_{p\mid N}{(1-\frac{1}{p})}$（$p$ 为质数）
 
 ```cpp
-int mn[N],phi[N];
+int mn[N], phi[N];
 VI p;
 void get_phi(int n) {
-    phi[1]=1;
-    for(int i=2;i<=n;i++) {
-        if(!mn[i]) mn[i]=i,p.PB(i),phi[i]=i-1;
-        for(auto x:p) {
-            if(x>mn[i]||x*i>n) break;
-            mn[i*x]=x;
-            phi[i*x]=i%x?phi[i]*(x-1):phi[i]*x;
+    phi[1] = 1;
+    for (int i = 2; i <= n; i++) {
+        if (!mn[i]) {
+            mn[i] = i,
+            p.PB(i);
+            phi[i] = i - 1;
+        }
+        for (auto x : p) {
+            if (x > mn[i] || x * i > n) {
+                break;
+            }
+            mn[x * i] = x;
+            phi[x * i] = i % x ? phi[i] * (x - 1) : phi[i] * x;
         }
     }
 }
@@ -3305,17 +3354,26 @@ void get_phi(int n) {
 ### 线性筛 & 莫比乌斯函数
 
 ```cpp
-int mn[N],mu[N];
+int mn[N], mu[N];
 VI p;
 void get_mu(int n) {
-    mu[1]=1;
-    for(int i=2;i<=n;i++) {
-        if(!mn[i]) mn[i]=i,mu[i]=-1,p.PB(i);
-        for(auto x:p) {
-            if(x*i>n) break;
-            mn[x*i]=x;
-            if(i%x==0) {mu[x*i]=0;break;}
-            mu[x*i]=-mu[i];
+    mu[1] = 1;
+    for (int i = 2; i <= n; i++) {
+        if (!mn[i]) {
+            mn[i] = i,
+            mu[i] = -1,
+            p.PB(i);
+        }
+        for (auto x : p) {
+            if (x * i > n) {
+                break;
+            }
+            mn[x * i] = x;
+            if (i % x == 0) {
+                mu[x * i] = 0;
+                break;
+            }
+            mu[x * i] = -mu[i];
         }
     }
 }
@@ -4520,24 +4578,33 @@ struct S {
 ### 归并排序
 
 ```cpp
-int a[N],temp[N];
-void merge(int l,int mid,int r) {
-    int i=l,j=mid+1;
-    int t=l;
-    while(i<=mid&&j<=r) {
-        if(a[i]<=a[j]) temp[t++]=a[i++];
-        else temp[t++]=a[j++];
+int a[N], temp[N];
+void merge(int l, int mid, int r) {
+    int i = l, j = mid + 1, t = l;
+    while (i <= mid && j <= r) {
+        if (a[i] <= a[j]) {
+            temp[t++] = a[i++];
+        }
+        else {
+            temp[t++] = a[j++];
+        }
     }
-    while(i<=mid) temp[t++]=a[i++];
-    while(j<=r) temp[t++]=a[j++];
-    for(int i=l;i<=r;i++) a[i]=temp[i];
+    while (i <= mid) {
+        temp[t++] = a[i++];
+    }
+    while (j <= r) {
+        temp[t++] = a[j++];
+    }
+    for (int i = l; i <= r; i++) {
+        a[i] = temp[i];
+    }
 }
-void merge_sort(int l,int r) {
-    if(l<r) {
-        int mid=l+r>>1;
-        merge_sort(l,mid);
-        merge_sort(mid+1,r);
-        merge(l,mid,r);
+void merge_sort(int l, int r) {
+    if (l < r) {
+        int mid = l + r >> 1;
+        merge_sort(l, mid);
+        merge_sort(mid + 1, r);
+        merge(l, mid, r);
     }
 }
 ```
@@ -4545,19 +4612,26 @@ void merge_sort(int l,int r) {
 ### 快速排序
 
 ```cpp
-void quick_sort(int l,int r) {
-    if(l<r) {
-        int i=l,j=r;
-        int key=a[l];
-        while(i<j) {
-            while(i<j&&a[j]>key) j--;
-            if(i<j) a[i++]=a[j];
-            while(i<j&&a[i]<key) i++;
-            if(i<j) a[j--]=a[i];
+void quick_sort(int l, int r) {
+    if (l < r) {
+        int i = l, j = r, key = a[l];
+        while (i < j) {
+            while (i < j && a[j] >= key) {
+                j--;
+            }
+            if (i < j) {
+                a[i++] = a[j];
+            }
+            while (i < j && a[i] <= key) {
+                i++;
+            }
+            if (i < j) {
+                a[j--] = a[i];
+            }
         }
-        a[i]=key;
-        quick_ort(l,i-1);
-        quick_ort(i+1,r);
+        a[i] = key;
+        quick_sort(l, i - 1);
+        quick_sort(i + 1, r);
     }
 }
 ```
@@ -4565,10 +4639,14 @@ void quick_sort(int l,int r) {
 ## 离散化
 
 ```cpp
-for(int i=1;i<=n;i++) b.PB(a[i]);
+for (int i = 1; i <= n; i++) {
+    b.PB(a[i]);
+}
 sort(ALL(b));
-b.resize(unique(ALL(b))-b.begin());
-for(int i=1;i<=n;i++) a[i]=lower_bound(ALL(b),a[i])-b.begin()+1; // 最小值为1
+b.resize(unique(ALL(b)) - b.begin());
+for (int i = 1; i <= n; i++) {
+    a[i] = lower_bound(ALL(b), a[i]) - b.begin() + 1; // 最小值为1
+}
 ```
 
 ## 二分
@@ -4833,14 +4911,4 @@ int __builtin_parity(unsigned int x)
 // usigned long long 版本在函数名后加 ll
 ```
 
-## 细节处理
 
-- (int)(x).size()
-- 1ll<<k
-- 上取整和 GCD 注意负数
-- 图论问题注意图不连通
-- 初始化注意 $0$ 和 $n+1$
-- 看清题目是从 $0$ 还是 $1$ 开始
-- 数组大小要开够
-- 字符串问题注意字符集
-- 二分注意上下界
